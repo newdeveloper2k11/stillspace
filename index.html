@@ -24,9 +24,13 @@
   <main class="page-shell">
     <header class="topbar reveal" data-reveal>
       <a class="brand-mark" href="#top">Vtn Meditation</a>
-      <div class="topbar-actions">
-        <button class="ghost-button auth-button" type="button">Log in</button>
-        <button class="primary-button auth-button" type="button">Sign up</button>
+      <div class="topbar-actions" id="topbar-actions">
+        <div class="user-profile" id="user-profile" style="display:none;">
+          <img class="user-avatar" id="user-avatar" src="" alt="Avatar">
+          <span class="user-name" id="user-name"></span>
+          <span class="admin-badge" id="admin-badge" style="display:none;">Admin</span>
+          <button class="ghost-button topbar-logout" id="logout-button" type="button">Sign out</button>
+        </div>
       </div>
     </header>
 

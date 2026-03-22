@@ -1,6 +1,7 @@
 const path = require("path");
 const Database = require("better-sqlite3");
 const { encrypt, decrypt, ensureKey } = require("./crypto-utils");
+const { isAdmin } = require("./auth");
 
 const DB_PATH = path.join(__dirname, "stillspace.db");
 
@@ -20,26 +21,79 @@ function getDatabase() {
   db.exec(`
     CREATE TABLE IF NOT EXISTS sessions (
       id           INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id      INTEGER,
       duration     INTEGER NOT NULL,
       completed    TEXT    NOT NULL,
-      finished_at  TEXT    NOT NULL DEFAULT (datetime('now', 'localtime'))
+      finished_at  TEXT    NOT NULL DEFAULT (datetime('now', 'localtime')),
+      FOREIGN KEY (user_id) REFERENCES users(id)
+    );
+  `);
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS users (
+      id         INTEGER PRIMARY KEY AUTOINCREMENT,
+      google_id  TEXT    UNIQUE NOT NULL,
+      email      TEXT    NOT NULL,
+      name       TEXT    NOT NULL,
+      picture    TEXT,
+      role       TEXT    NOT NULL DEFAULT 'user',
+      created_at TEXT    NOT NULL DEFAULT (datetime('now', 'localtime'))
     );
   `);
 
   return db;
 }
 
-function insertSession(duration, completedSeconds) {
+function insertSession(duration, completedSeconds, userId) {
   const database = getDatabase();
   const encryptedCompleted = encrypt(String(completedSeconds));
 
   const statement = database.prepare(
-    "INSERT INTO sessions (duration, completed) VALUES (?, ?)"
+    "INSERT INTO sessions (duration, completed, user_id) VALUES (?, ?, ?)"
   );
 
-  const result = statement.run(duration, encryptedCompleted);
+  const result = statement.run(duration, encryptedCompleted, userId || null);
 
   return { id: result.lastInsertRowid };
+}
+
+function findOrCreateUser({ googleId, email, name, picture }) {
+  const database = getDatabase();
+
+  let user = database.prepare("SELECT * FROM users WHERE google_id = ?").get(googleId);
+
+  if (user) {
+    // Update name/picture on each login
+    database.prepare("UPDATE users SET name = ?, picture = ? WHERE id = ?").run(name, picture, user.id);
+    user.name = name;
+    user.picture = picture;
+    return user;
+  }
+
+  const role = isAdmin(email) ? "admin" : "user";
+
+  const result = database.prepare(
+    "INSERT INTO users (google_id, email, name, picture, role) VALUES (?, ?, ?, ?, ?)"
+  ).run(googleId, email, name, picture, role);
+
+  return {
+    id: result.lastInsertRowid,
+    google_id: googleId,
+    email,
+    name,
+    picture,
+    role,
+  };
+}
+
+function getUserById(id) {
+  const database = getDatabase();
+  return database.prepare("SELECT id, email, name, picture, role, created_at FROM users WHERE id = ?").get(id);
+}
+
+function getAllUsers() {
+  const database = getDatabase();
+  return database.prepare("SELECT id, email, name, picture, role, created_at FROM users ORDER BY created_at DESC").all();
 }
 
 function getAllSessions() {
@@ -121,4 +175,12 @@ function closeDatabase() {
   }
 }
 
-module.exports = { insertSession, getAllSessions, getStats, closeDatabase };
+module.exports = {
+  insertSession,
+  getAllSessions,
+  getStats,
+  findOrCreateUser,
+  getUserById,
+  getAllUsers,
+  closeDatabase,
+};

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login | Vtn Meditation</title>
+  <meta name="description" content="Login or sign up for your Vtn Meditation practice space.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Manrope:wght@400;500;700&display=swap"
+    rel="stylesheet"
+  >
+  <link rel="stylesheet" href="login.css">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+  <div class="login-glow login-glow-left"></div>
+  <div class="login-glow login-glow-right"></div>
+
+  <main class="login-shell">
+    <section class="login-card">
+      <a class="login-brand" href="/">Vtn Meditation</a>
+      <p class="login-eyebrow">Guided access</p>
+      <h1 class="login-heading" id="auth-heading">Welcome back.</h1>
+      <p class="login-copy" id="auth-copy">
+        Sign in to continue your meditation practice and track your journey.
+      </p>
+
+      <div class="auth-toggle" role="tablist" aria-label="Authentication mode">
+        <button class="auth-toggle-button active" id="login-tab" type="button" data-mode="login">Log in</button>
+        <button class="auth-toggle-button" id="signup-tab" type="button" data-mode="signup">Sign up</button>
+      </div>
+
+      <div class="login-feature-grid">
+        <article>
+          <span class="feature-label">Saved practice</span>
+          <strong>Keep your session history in one place</strong>
+        </article>
+        <article>
+          <span class="feature-label">Simple start</span>
+          <strong>Use Google to get in quickly for now</strong>
+        </article>
+      </div>
+
+      <div class="login-divider"></div>
+
+      <div class="auth-panel active" id="login-panel">
+        <p class="auth-panel-copy">
+          Use your Google account to return to your dashboard, progress, and saved sessions.
+        </p>
+        <div class="google-signin-container" id="google-signin-login"></div>
+      </div>
+
+      <div class="auth-panel" id="signup-panel" hidden>
+        <p class="auth-panel-copy">
+          Create your account with Google now. More sign-up methods can be added later without
+          changing your core profile.
+        </p>
+        <div class="google-signin-container" id="google-signin-signup"></div>
+      </div>
+
+      <div class="auth-note">
+        <p>Google sign-in is the only active provider right now. Facebook and email can be added next.</p>
+      </div>
+
+      <p class="login-status" id="login-status" aria-live="polite"></p>
+
+      <div class="login-footer">
+        <p>Your data is encrypted locally. OAuth provider setup still requires a valid Google client ID.</p>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const modeCopy = {
+      login: {
+        heading: "Welcome back.",
+        copy: "Sign in to continue your meditation practice and track your journey.",
+        status: "",
+      },
+      signup: {
+        heading: "Create your space.",
+        copy: "Start your account to save sessions, view progress, and return to your practice anytime.",
+        status: "Signing up uses Google right now and creates your local user profile on first login.",
+      },
+    };
+
+    const loginTab = document.getElementById("login-tab");
+    const signupTab = document.getElementById("signup-tab");
+    const loginPanel = document.getElementById("login-panel");
+    const signupPanel = document.getElementById("signup-panel");
+    const authHeading = document.getElementById("auth-heading");
+    const authCopy = document.getElementById("auth-copy");
+    const loginStatus = document.getElementById("login-status");
+    let googleClientId = "";
+
+    function setMode(mode) {
+      const isSignup = mode === "signup";
+      loginTab.classList.toggle("active", !isSignup);
+      signupTab.classList.toggle("active", isSignup);
+      loginPanel.classList.toggle("active", !isSignup);
+      signupPanel.classList.toggle("active", isSignup);
+      loginPanel.hidden = isSignup;
+      signupPanel.hidden = !isSignup;
+      authHeading.textContent = modeCopy[mode].heading;
+      authCopy.textContent = modeCopy[mode].copy;
+      loginStatus.textContent = modeCopy[mode].status;
+
+      const nextUrl = new URL(window.location.href);
+      nextUrl.searchParams.set("mode", mode);
+      window.history.replaceState({}, "", nextUrl);
+    }
+
+    function renderGoogleButtons() {
+      if (!window.google || !window.google.accounts || !googleClientId) {
+        return false;
+      }
+
+      const containers = [
+        document.getElementById("google-signin-login"),
+        document.getElementById("google-signin-signup"),
+      ];
+
+      containers.forEach((container) => {
+        container.innerHTML = "";
+        window.google.accounts.id.renderButton(container, {
+          type: "standard",
+          shape: "pill",
+          theme: "outline",
+          text: "continue_with",
+          size: "large",
+          logo_alignment: "left",
+          width: 320,
+        });
+      });
+
+      return true;
+    }
+
+    async function initializeGoogle() {
+      try {
+        const configResponse = await fetch("/api/auth/config");
+        const config = await configResponse.json();
+        googleClientId = config.googleClientId || "";
+
+        if (!googleClientId) {
+          loginStatus.textContent = "Google Sign-In is not configured yet. Add GOOGLE_CLIENT_ID to your local .env file.";
+          return;
+        }
+
+        const tryInitialize = () => {
+          if (!window.google || !window.google.accounts) {
+            window.setTimeout(tryInitialize, 150);
+            return;
+          }
+
+          window.google.accounts.id.initialize({
+            client_id: googleClientId,
+            callback: handleGoogleSignIn,
+          });
+
+          renderGoogleButtons();
+        };
+
+        tryInitialize();
+      } catch (error) {
+        loginStatus.textContent = "Could not load sign-in configuration.";
+      }
+    }
+
+    async function initLogin() {
+      try {
+        const meResponse = await fetch("/api/auth/me");
+        if (meResponse.ok) {
+          window.location.href = "/";
+          return;
+        }
+      } catch {
+        // Not logged in, keep showing auth page.
+      }
+
+      const initialMode = new URL(window.location.href).searchParams.get("mode") === "signup"
+        ? "signup"
+        : "login";
+      setMode(initialMode);
+      await initializeGoogle();
+    }
+
+    async function handleGoogleSignIn(response) {
+      loginStatus.textContent = "Signing in...";
+
+      try {
+        const result = await fetch("/api/auth/google", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ credential: response.credential }),
+        });
+
+        const data = await result.json();
+
+        if (data.ok) {
+          loginStatus.textContent = `Welcome, ${data.user.name}!`;
+          window.setTimeout(() => {
+            window.location.href = "/";
+          }, 600);
+          return;
+        }
+
+        loginStatus.textContent = data.error || "Sign-in failed. Please try again.";
+      } catch (error) {
+        loginStatus.textContent = "Network error. Please try again.";
+      }
+    }
+
+    loginTab.addEventListener("click", () => setMode("login"));
+    signupTab.addEventListener("click", () => setMode("signup"));
+
+    window.handleGoogleSignIn = handleGoogleSignIn;
+    initLogin();
+  </script>
+</body>
+</html>

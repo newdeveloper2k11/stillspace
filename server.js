@@ -1,7 +1,22 @@
 const http = require("http");
 const fs = require("fs");
 const path = require("path");
-const { insertSession, getAllSessions, getStats, closeDatabase } = require("./database");
+const {
+  insertSession,
+  getAllSessions,
+  getStats,
+  findOrCreateUser,
+  getUserById,
+  getAllUsers,
+  closeDatabase,
+} = require("./database");
+const {
+  verifyGoogleToken,
+  issueSessionToken,
+  getSessionFromRequest,
+  setSessionCookie,
+  clearSessionCookie,
+} = require("./auth");
 
 const port = process.env.PORT || 3000;
 const host = "127.0.0.1";
@@ -43,8 +58,105 @@ function sendJson(response, statusCode, data) {
   response.end(body);
 }
 
+function redirect(response, location) {
+  response.writeHead(302, { Location: location });
+  response.end();
+}
+
+async function handleAuthRoutes(request, response, url) {
+  // POST /api/auth/google
+  if (request.method === "POST" && url === "/api/auth/google") {
+    try {
+      const rawBody = await readBody(request);
+      const { credential } = JSON.parse(rawBody);
+
+      if (!credential) {
+        sendJson(response, 400, { error: "Missing credential" });
+        return true;
+      }
+
+      const googleUser = await verifyGoogleToken(credential);
+      const user = findOrCreateUser(googleUser);
+      const token = issueSessionToken(user);
+
+      setSessionCookie(response, token);
+      sendJson(response, 200, {
+        ok: true,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          picture: user.picture,
+          role: user.role,
+        },
+      });
+    } catch (error) {
+      console.error("Auth error:", error.message);
+      sendJson(response, 401, { error: "Authentication failed" });
+    }
+    return true;
+  }
+
+  // GET /api/auth/me
+  if (request.method === "GET" && url === "/api/auth/me") {
+    const session = getSessionFromRequest(request);
+
+    if (!session) {
+      sendJson(response, 401, { error: "Not authenticated" });
+      return true;
+    }
+
+    const user = getUserById(session.userId);
+
+    if (!user) {
+      clearSessionCookie(response);
+      sendJson(response, 401, { error: "User not found" });
+      return true;
+    }
+
+    sendJson(response, 200, { user });
+    return true;
+  }
+
+  // POST /api/auth/logout
+  if (request.method === "POST" && url === "/api/auth/logout") {
+    clearSessionCookie(response);
+    sendJson(response, 200, { ok: true });
+    return true;
+  }
+
+  // GET /api/auth/config (public — returns client ID for frontend)
+  if (request.method === "GET" && url === "/api/auth/config") {
+    sendJson(response, 200, {
+      googleClientId: process.env.GOOGLE_CLIENT_ID || "",
+    });
+    return true;
+  }
+
+  return false;
+}
+
 async function handleApiRequest(request, response) {
   const url = request.url.split("?")[0];
+
+  // Auth routes
+  if (url.startsWith("/api/auth/")) {
+    const handled = await handleAuthRoutes(request, response, url);
+    if (handled) return;
+  }
+
+  // GET /api/admin/users (admin only)
+  if (request.method === "GET" && url === "/api/admin/users") {
+    const session = getSessionFromRequest(request);
+    if (!session || session.role !== "admin") {
+      sendJson(response, 403, { error: "Admin access required" });
+      return;
+    }
+
+    const users = getAllUsers();
+    sendJson(response, 200, { users });
+    return;
+  }
 
   // POST /api/sessions
   if (request.method === "POST" && url === "/api/sessions") {
@@ -57,7 +169,10 @@ async function handleApiRequest(request, response) {
         return;
       }
 
-      const result = insertSession(duration, completed);
+      const session = getSessionFromRequest(request);
+      const userId = session ? session.userId : null;
+
+      const result = insertSession(duration, completed, userId);
       sendJson(response, 201, { ok: true, id: result.id });
     } catch (error) {
       sendJson(response, 500, { error: "Failed to save session" });
@@ -90,6 +205,8 @@ async function handleApiRequest(request, response) {
   sendJson(response, 404, { error: "API route not found" });
 }
 
+const publicPaths = ["/login.html", "/login.css"];
+
 const server = http.createServer(async (request, response) => {
   const requestPath = request.url.split("?")[0];
 
@@ -97,6 +214,25 @@ const server = http.createServer(async (request, response) => {
   if (requestPath.startsWith("/api/")) {
     await handleApiRequest(request, response);
     return;
+  }
+
+  // Allow login page and its assets without auth
+  const isPublicPath = publicPaths.some((p) => requestPath === p)
+    || requestPath.endsWith(".css")
+    || requestPath.endsWith(".js")
+    || requestPath.endsWith(".png")
+    || requestPath.endsWith(".jpg")
+    || requestPath.endsWith(".svg")
+    || requestPath.endsWith(".ico");
+
+  // Redirect unauthenticated users to login (HTML pages only)
+  if (!isPublicPath && requestPath !== "/login.html") {
+    const session = getSessionFromRequest(request);
+
+    if (!session) {
+      redirect(response, "/login.html");
+      return;
+    }
   }
 
   // Serve static files
@@ -126,6 +262,12 @@ const server = http.createServer(async (request, response) => {
 server.listen(port, host, () => {
   console.log(`Stillspace running at http://${host}:${port}`);
   console.log("Database ready — session data is encrypted at rest.");
+
+  if (!process.env.GOOGLE_CLIENT_ID) {
+    console.log("\n⚠  GOOGLE_CLIENT_ID not set in .env");
+    console.log("   Google login will not work until you add it.");
+    console.log("   See .env.example for instructions.\n");
+  }
 });
 
 process.on("SIGINT", () => {
