@@ -22,6 +22,14 @@
   <div class="background-glow background-glow-right"></div>
 
   <main class="page-shell">
+    <header class="topbar reveal" data-reveal>
+      <a class="brand-mark" href="#top">Vtn Meditation</a>
+      <div class="topbar-actions">
+        <button class="ghost-button auth-button" type="button">Log in</button>
+        <button class="primary-button auth-button" type="button">Sign up</button>
+      </div>
+    </header>
+
     <section class="hero-card reveal" data-reveal>
       <p class="eyebrow">Vtn Meditation</p>
       <h1>Calm the mind. Reconnect with nature.</h1>
@@ -139,6 +147,56 @@
       </p>
     </section>
 
+    <section class="panel learn-panel reveal" data-reveal>
+      <div class="panel-heading">
+        <p class="eyebrow">Learn more</p>
+        <h2>Read more about Vo Trong Nghia's meditation philosophy.</h2>
+      </div>
+      <div class="learn-grid">
+        <a
+          class="learn-card"
+          href="https://www.holcimfoundation.org/media/articles/2024/ecogradia-nghia"
+          target="_blank"
+          rel="noreferrer"
+        >
+          <span class="video-tag">Holcim Foundation</span>
+          <h3>Calm the mind, connect with place</h3>
+          <p>
+            A 2024 profile connecting his meditation practice with healing, sustainability,
+            and daily office meditation.
+          </p>
+        </a>
+
+        <a
+          class="learn-card"
+          href="https://www.tatlerasia.com/homes/architecture-design/interview-vo-trong-nghia-architects"
+          target="_blank"
+          rel="noreferrer"
+        >
+          <span class="video-tag">Tatler Asia</span>
+          <h3>On 1,000 days of meditation and mental healing</h3>
+          <p>
+            An interview about breath observation, daily practice, and meditation as support
+            for concentration, calm, and emotional recovery.
+          </p>
+        </a>
+
+        <a
+          class="learn-card"
+          href="https://iba.online/en/newsroom/designing/meditation-mode-why-architects-need-to-heal-themselves-in-order-to-be-able-to-heal-the-world/"
+          target="_blank"
+          rel="noreferrer"
+        >
+          <span class="video-tag">IBA Forum</span>
+          <h3>Meditation, mindfulness, and sustainable architecture</h3>
+          <p>
+            Coverage of his view that healing the self helps create calmer spaces, better work,
+            and a deeper connection between people and environment.
+          </p>
+        </a>
+      </div>
+    </section>
+
     <section class="panel videos-panel reveal" data-reveal>
       <div class="panel-heading">
         <p class="eyebrow">Featured videos</p>
@@ -203,6 +261,32 @@
           </p>
         </article>
       </div>
+    </section>
+
+    <section class="panel history-panel reveal" data-reveal>
+      <div class="panel-heading">
+        <p class="eyebrow">Your practice</p>
+        <h2>Session history</h2>
+      </div>
+
+      <div class="history-stats" id="history-stats">
+        <div class="history-stat">
+          <span class="stat-label">Total sessions</span>
+          <strong id="stat-total-sessions">—</strong>
+        </div>
+        <div class="history-stat">
+          <span class="stat-label">Minutes practiced</span>
+          <strong id="stat-total-minutes">—</strong>
+        </div>
+        <div class="history-stat">
+          <span class="stat-label">Day streak</span>
+          <strong id="stat-streak">—</strong>
+        </div>
+      </div>
+
+      <ul class="session-list" id="session-list">
+        <li class="session-empty" id="session-empty">No sessions recorded yet. Complete a meditation to see your history.</li>
+      </ul>
     </section>
   </main>
 

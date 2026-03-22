@@ -1,0 +1,8 @@
+# Local data - never commit
+stillspace.db
+stillspace.db-shm
+stillspace.db-wal
+.env
+.env.*
+!.env.example
+node_modules/

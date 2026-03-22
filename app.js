@@ -13,6 +13,12 @@ const revealElements = document.querySelectorAll("[data-reveal]");
 const glows = document.querySelectorAll(".background-glow");
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+const sessionList = document.getElementById("session-list");
+const sessionEmpty = document.getElementById("session-empty");
+const statTotalSessions = document.getElementById("stat-total-sessions");
+const statTotalMinutes = document.getElementById("stat-total-minutes");
+const statStreak = document.getElementById("stat-streak");
+
 const breathSequence = [
   { label: "Arrive", caption: "Breathe in slowly and let the body settle.", duration: 4000 },
   { label: "Notice", caption: "Stay still. Feel the mind without forcing it.", duration: 4000 },
@@ -109,6 +115,7 @@ function startTimer() {
       stopTimer();
       timerStatus.textContent = "Session complete. Rest in stillness for one more breath.";
       playCompletionChime();
+      saveSession(selectedMinutes, selectedMinutes * 60);
       return;
     }
 
@@ -313,3 +320,77 @@ setupReveal();
 bindPointerMotion();
 animateParallax();
 updateBreathGuide();
+loadStats();
+loadSessions();
+
+async function saveSession(duration, completed) {
+  try {
+    await fetch("/api/sessions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ duration, completed }),
+    });
+
+    loadStats();
+    loadSessions();
+  } catch (error) {
+    console.warn("Could not save session:", error);
+  }
+}
+
+async function loadStats() {
+  try {
+    const response = await fetch("/api/stats");
+    const data = await response.json();
+
+    statTotalSessions.textContent = data.totalSessions || "0";
+    statTotalMinutes.textContent = data.totalMinutes || "0";
+    statStreak.textContent = data.streak || "0";
+  } catch (error) {
+    console.warn("Could not load stats:", error);
+  }
+}
+
+async function loadSessions() {
+  try {
+    const response = await fetch("/api/sessions");
+    const data = await response.json();
+    const sessions = data.sessions || [];
+
+    if (sessions.length === 0) {
+      sessionEmpty.style.display = "";
+      return;
+    }
+
+    sessionEmpty.style.display = "none";
+
+    // Remove old session items but keep the empty placeholder
+    Array.from(sessionList.querySelectorAll(".session-item")).forEach((item) => item.remove());
+
+    sessions.forEach((session) => {
+      const li = document.createElement("li");
+      li.className = "session-item";
+
+      const completedMinutes = Math.round(session.completed / 60);
+      const date = new Date(session.finishedAt);
+      const dateString = date.toLocaleDateString(undefined, {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
+      const timeString = date.toLocaleTimeString(undefined, {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+
+      li.innerHTML = `
+        <span class="session-date">${dateString} · ${timeString}</span>
+        <span class="session-detail">${session.duration} min session — ${completedMinutes} min completed</span>
+      `;
+
+      sessionList.appendChild(li);
+    });
+  } catch (error) {
+    console.warn("Could not load sessions:", error);
+  }
+}

@@ -113,6 +113,31 @@ button {
   padding: 2rem 0 3rem;
 }
 
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.brand-mark {
+  color: var(--accent-deep);
+  text-decoration: none;
+  font-family: "Cormorant Garamond", serif;
+  font-size: 1.7rem;
+  font-weight: 600;
+}
+
+.topbar-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.auth-button {
+  min-width: 7.5rem;
+}
+
 .hero-card,
 .panel {
   backdrop-filter: blur(18px);
@@ -298,6 +323,11 @@ h3 {
   min-height: 14.5rem;
 }
 
+.learn-panel {
+  min-height: 14.5rem;
+  margin-top: 1rem;
+}
+
 .panel-heading {
   margin-bottom: 1.2rem;
 }
@@ -423,6 +453,37 @@ h3 {
   margin: 0;
 }
 
+.learn-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.learn-card {
+  display: block;
+  padding: 1.2rem;
+  border-radius: 22px;
+  text-decoration: none;
+  color: inherit;
+  background: rgba(255, 251, 244, 0.92);
+  border: 1px solid rgba(43, 69, 62, 0.08);
+  box-shadow: 0 18px 40px rgba(54, 74, 67, 0.08);
+  transform: translateY(0);
+  transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+}
+
+.learn-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 24px 48px rgba(54, 74, 67, 0.12);
+  border-color: rgba(94, 139, 126, 0.28);
+}
+
+.learn-card p {
+  margin: 0.6rem 0 0;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
 .videos-panel {
   margin-top: 1rem;
 }
@@ -502,6 +563,85 @@ h3 {
 .intentions-list div:hover {
   transform: translateY(-4px);
   box-shadow: 0 18px 40px rgba(54, 74, 67, 0.1);
+}
+
+.history-panel {
+  margin-top: 1rem;
+}
+
+.history-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.4rem;
+}
+
+.history-stat {
+  padding: 1rem 1.2rem;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.34);
+  border: 1px solid rgba(43, 69, 62, 0.08);
+  text-align: center;
+}
+
+.history-stat strong {
+  display: block;
+  margin-top: 0.25rem;
+  font-family: "Cormorant Garamond", serif;
+  font-size: 2rem;
+  color: var(--accent-deep);
+}
+
+.session-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.6rem;
+  max-height: 22rem;
+  overflow-y: auto;
+}
+
+.session-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.session-list::-webkit-scrollbar-thumb {
+  background: rgba(94, 139, 126, 0.25);
+  border-radius: 999px;
+}
+
+.session-item {
+  display: flex;
+  flex-direction: column;
+  padding: 0.9rem 1.1rem;
+  border-radius: 16px;
+  background: var(--panel-strong);
+  border: 1px solid rgba(43, 69, 62, 0.08);
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.session-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(54, 74, 67, 0.08);
+}
+
+.session-date {
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin-bottom: 0.2rem;
+}
+
+.session-detail {
+  font-weight: 500;
+  color: var(--text);
+}
+
+.session-empty {
+  padding: 1.5rem;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.95rem;
 }
 
 .reveal {
@@ -623,7 +763,9 @@ h3 {
 @media (max-width: 900px) {
   .stats-grid,
   .experience-grid,
-  .video-grid {
+  .learn-grid,
+  .video-grid,
+  .history-stats {
     grid-template-columns: 1fr;
   }
 
@@ -650,13 +792,16 @@ h3 {
 
   .hero-actions,
   .timer-actions,
-  .timer-presets {
+  .timer-presets,
+  .topbar,
+  .topbar-actions {
     flex-direction: column;
   }
 
   .primary-button,
   .ghost-button,
-  .preset {
+  .preset,
+  .auth-button {
     width: 100%;
   }
 
