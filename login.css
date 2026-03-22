@@ -1,8 +1,7 @@
 :root {
   --bg: #f3efe6;
   --bg-deep: #d9e7df;
-  --panel: rgba(255, 251, 244, 0.78);
-  --panel-strong: rgba(255, 251, 244, 0.94);
+  --panel: rgba(255, 251, 244, 0.75);
   --text: #20302d;
   --muted: #5d6e69;
   --accent: #5e8b7e;
@@ -23,7 +22,7 @@ body {
   background:
     radial-gradient(circle at top, rgba(255, 255, 255, 0.82), transparent 36%),
     linear-gradient(135deg, var(--bg) 0%, #edf4ee 45%, var(--bg-deep) 100%);
-  overflow-x: hidden;
+  overflow: hidden;
 }
 
 .login-glow {
@@ -60,7 +59,7 @@ body {
 }
 
 .login-card {
-  width: min(560px, 100%);
+  width: min(420px, 100%);
   padding: 2.8rem 2.4rem;
   border-radius: 32px;
   backdrop-filter: blur(18px);
@@ -68,16 +67,7 @@ body {
   border: 1px solid var(--line);
   box-shadow: var(--shadow);
   animation: cardRise 700ms ease-out both;
-}
-
-.login-brand {
-  display: inline-block;
-  margin-bottom: 1rem;
-  text-decoration: none;
-  color: var(--accent-deep);
-  font-family: "Cormorant Garamond", serif;
-  font-size: 1.5rem;
-  font-weight: 600;
+  text-align: center;
 }
 
 .login-eyebrow {
@@ -89,112 +79,32 @@ body {
 }
 
 .login-heading {
-  margin: 0;
   font-family: "Cormorant Garamond", serif;
   font-weight: 600;
-  font-size: clamp(2.5rem, 6vw, 3.5rem);
+  font-size: clamp(2.4rem, 6vw, 3.2rem);
   line-height: 0.95;
-}
-
-.login-copy,
-.auth-panel-copy,
-.login-footer p,
-.auth-note p {
-  color: var(--muted);
-  line-height: 1.7;
+  margin: 0;
 }
 
 .login-copy {
+  color: var(--muted);
+  line-height: 1.7;
   margin: 1rem 0 0;
   font-size: 1rem;
-  max-width: 34rem;
-}
-
-.auth-toggle {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.75rem;
-  margin-top: 1.8rem;
-}
-
-.auth-toggle-button {
-  border: 1px solid rgba(63, 101, 90, 0.14);
-  border-radius: 999px;
-  padding: 0.9rem 1rem;
-  background: rgba(255, 255, 255, 0.45);
-  color: var(--text);
-  font: inherit;
-  cursor: pointer;
-  transition: transform 180ms ease, background-color 180ms ease, border-color 180ms ease;
-}
-
-.auth-toggle-button.active {
-  background: var(--accent-deep);
-  color: #f6f3ed;
-  border-color: transparent;
-}
-
-.auth-toggle-button:hover {
-  transform: translateY(-1px);
-}
-
-.login-feature-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
-  margin-top: 1.4rem;
-}
-
-.login-feature-grid article {
-  padding: 1rem 1.1rem;
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.38);
-  border: 1px solid rgba(43, 69, 62, 0.08);
-}
-
-.feature-label {
-  display: block;
-  margin-bottom: 0.45rem;
-  color: var(--muted);
-  font-size: 0.84rem;
 }
 
 .login-divider {
-  width: 100%;
-  height: 1px;
-  margin: 1.8rem 0;
-  background: linear-gradient(90deg, transparent, rgba(94, 139, 126, 0.55), transparent);
+  width: 3rem;
+  height: 2px;
+  margin: 1.8rem auto;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  border-radius: 999px;
 }
 
-.auth-panel {
-  display: none;
-}
-
-.auth-panel.active {
-  display: block;
-}
-
-.auth-panel-copy {
-  margin: 0 0 1rem;
-}
-
-.google-signin-container {
+#google-signin-container {
   display: flex;
   justify-content: center;
   min-height: 44px;
-}
-
-.auth-note {
-  margin-top: 1rem;
-  padding: 1rem 1.1rem;
-  border-radius: 18px;
-  background: var(--panel-strong);
-  border: 1px solid rgba(43, 69, 62, 0.08);
-}
-
-.auth-note p {
-  margin: 0;
-  font-size: 0.93rem;
 }
 
 .login-status {
@@ -202,6 +112,7 @@ body {
   font-size: 0.92rem;
   color: var(--accent-deep);
   min-height: 1.4em;
+  transition: opacity 300ms ease;
 }
 
 .login-footer {
@@ -213,6 +124,7 @@ body {
 .login-footer p {
   margin: 0;
   font-size: 0.82rem;
+  color: var(--muted);
 }
 
 @keyframes cardRise {
@@ -220,7 +132,6 @@ body {
     opacity: 0;
     transform: translateY(32px) scale(0.97);
   }
-
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -231,20 +142,14 @@ body {
   from {
     transform: translate(0, 0);
   }
-
   to {
     transform: translate(2rem, 1.5rem);
   }
 }
 
-@media (max-width: 560px) {
+@media (max-width: 480px) {
   .login-card {
     padding: 2rem 1.4rem;
     border-radius: 24px;
-  }
-
-  .auth-toggle,
-  .login-feature-grid {
-    grid-template-columns: 1fr;
   }
 }
