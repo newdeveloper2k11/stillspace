@@ -11,13 +11,19 @@ const presetButtons = document.querySelectorAll(".preset");
 const mistLayer = document.getElementById("mist-layer");
 const revealElements = document.querySelectorAll("[data-reveal]");
 const glows = document.querySelectorAll(".background-glow");
-const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
 const sessionList = document.getElementById("session-list");
 const sessionEmpty = document.getElementById("session-empty");
 const statTotalSessions = document.getElementById("stat-total-sessions");
 const statTotalMinutes = document.getElementById("stat-total-minutes");
 const statStreak = document.getElementById("stat-streak");
+const authLinks = document.getElementById("auth-links");
+const userProfile = document.getElementById("user-profile");
+const userAvatar = document.getElementById("user-avatar");
+const userName = document.getElementById("user-name");
+const adminBadge = document.getElementById("admin-badge");
+const dashboardLink = document.getElementById("dashboard-link");
+const logoutButton = document.getElementById("logout-button");
+const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 const breathSequence = [
   { label: "Arrive", caption: "Breathe in slowly and let the body settle.", duration: 4000 },
@@ -38,6 +44,7 @@ let pointerTargetX = 0;
 let pointerTargetY = 0;
 let pointerCurrentX = 0;
 let pointerCurrentY = 0;
+let currentUser = null;
 
 function updateBreathGuide() {
   const phase = breathSequence[breathIndex];
@@ -108,14 +115,14 @@ function startTimer() {
   timerToggle.textContent = "Pause";
   timerStatus.textContent = "Session in progress. Stay with breath, body, and surroundings.";
 
-  timerIntervalId = window.setInterval(() => {
+  timerIntervalId = window.setInterval(async () => {
     if (timeRemaining <= 1) {
       timeRemaining = 0;
       renderTimer();
       stopTimer();
       timerStatus.textContent = "Session complete. Rest in stillness for one more breath.";
       playCompletionChime();
-      saveSession(selectedMinutes, selectedMinutes * 60);
+      await saveSession(selectedMinutes, selectedMinutes * 60);
       return;
     }
 
@@ -223,9 +230,7 @@ function createMist() {
     return;
   }
 
-  const particleCount = 18;
-
-  for (let i = 0; i < particleCount; i += 1) {
+  for (let i = 0; i < 18; i += 1) {
     const particle = document.createElement("span");
     particle.className = "mist-particle";
     particle.style.setProperty("--size", `${40 + Math.random() * 110}px`);
@@ -295,44 +300,68 @@ function bindPointerMotion() {
   });
 }
 
-startSessionButton.addEventListener("click", () => {
-  setPreset(10);
-  if (!timerIntervalId) {
-    startTimer();
+function updateHeader(user) {
+  currentUser = user;
+
+  if (user) {
+    authLinks.style.display = "none";
+    userProfile.style.display = "flex";
+    userName.textContent = user.name;
+    userAvatar.src = user.picture || "https://www.gravatar.com/avatar/?d=mp";
+    userAvatar.alt = `${user.name} avatar`;
+    adminBadge.style.display = user.role === "admin" ? "inline-flex" : "none";
+    dashboardLink.style.display = user.role === "admin" ? "inline-flex" : "none";
+    return;
   }
-  window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
-});
 
-toggleSoundButton.addEventListener("click", toggleAmbientSound);
-timerToggle.addEventListener("click", startTimer);
-timerReset.addEventListener("click", resetTimer);
+  authLinks.style.display = "flex";
+  userProfile.style.display = "none";
+  adminBadge.style.display = "none";
+  dashboardLink.style.display = "none";
+}
 
-presetButtons.forEach((button) => {
-  button.addEventListener("click", () => {
-    stopTimer();
-    setPreset(Number(button.dataset.minutes));
-  });
-});
+async function loadCurrentUser() {
+  try {
+    const response = await fetch("/api/auth/me");
+    if (!response.ok) {
+      updateHeader(null);
+      return null;
+    }
 
-renderTimer();
-createMist();
-setupReveal();
-bindPointerMotion();
-animateParallax();
-updateBreathGuide();
-loadStats();
-loadSessions();
+    const data = await response.json();
+    updateHeader(data.user);
+    return data.user;
+  } catch {
+    updateHeader(null);
+    return null;
+  }
+}
+
+function showSignedOutHistoryState(message) {
+  statTotalSessions.textContent = "-";
+  statTotalMinutes.textContent = "-";
+  statStreak.textContent = "-";
+  sessionEmpty.textContent = message;
+  sessionEmpty.style.display = "";
+  Array.from(sessionList.querySelectorAll(".session-item")).forEach((item) => item.remove());
+}
 
 async function saveSession(duration, completed) {
   try {
-    await fetch("/api/sessions", {
+    const response = await fetch("/api/sessions", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ duration, completed }),
     });
 
-    loadStats();
-    loadSessions();
+    if (response.status === 401) {
+      timerStatus.textContent = "Sign in with Google to save completed sessions.";
+      showSignedOutHistoryState("Sign in with Google to save and review your meditation history.");
+      return;
+    }
+
+    await loadStats();
+    await loadSessions();
   } catch (error) {
     console.warn("Could not save session:", error);
   }
@@ -341,8 +370,13 @@ async function saveSession(duration, completed) {
 async function loadStats() {
   try {
     const response = await fetch("/api/stats");
-    const data = await response.json();
 
+    if (response.status === 401) {
+      showSignedOutHistoryState("Sign in with Google to view your private stats and saved sessions.");
+      return;
+    }
+
+    const data = await response.json();
     statTotalSessions.textContent = data.totalSessions || "0";
     statTotalMinutes.textContent = data.totalMinutes || "0";
     statStreak.textContent = data.streak || "0";
@@ -354,18 +388,24 @@ async function loadStats() {
 async function loadSessions() {
   try {
     const response = await fetch("/api/sessions");
+
+    if (response.status === 401) {
+      showSignedOutHistoryState("Sign in with Google to save and review your meditation history.");
+      return;
+    }
+
     const data = await response.json();
     const sessions = data.sessions || [];
 
+    Array.from(sessionList.querySelectorAll(".session-item")).forEach((item) => item.remove());
+
     if (sessions.length === 0) {
+      sessionEmpty.textContent = "No sessions recorded yet. Complete a meditation to see your history.";
       sessionEmpty.style.display = "";
       return;
     }
 
     sessionEmpty.style.display = "none";
-
-    // Remove old session items but keep the empty placeholder
-    Array.from(sessionList.querySelectorAll(".session-item")).forEach((item) => item.remove());
 
     sessions.forEach((session) => {
       const li = document.createElement("li");
@@ -384,8 +424,8 @@ async function loadSessions() {
       });
 
       li.innerHTML = `
-        <span class="session-date">${dateString} · ${timeString}</span>
-        <span class="session-detail">${session.duration} min session — ${completedMinutes} min completed</span>
+        <span class="session-date">${dateString} - ${timeString}</span>
+        <span class="session-detail">${session.duration} min session - ${completedMinutes} min completed</span>
       `;
 
       sessionList.appendChild(li);
@@ -394,3 +434,45 @@ async function loadSessions() {
     console.warn("Could not load sessions:", error);
   }
 }
+
+async function logout() {
+  try {
+    await fetch("/api/auth/logout", { method: "POST" });
+  } finally {
+    window.location.href = "/login.html?mode=login";
+  }
+}
+
+startSessionButton.addEventListener("click", () => {
+  setPreset(10);
+  if (!timerIntervalId) {
+    startTimer();
+  }
+  window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+});
+
+toggleSoundButton.addEventListener("click", toggleAmbientSound);
+timerToggle.addEventListener("click", startTimer);
+timerReset.addEventListener("click", resetTimer);
+logoutButton.addEventListener("click", logout);
+
+presetButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    stopTimer();
+    setPreset(Number(button.dataset.minutes));
+  });
+});
+
+async function initializePage() {
+  renderTimer();
+  createMist();
+  setupReveal();
+  bindPointerMotion();
+  animateParallax();
+  updateBreathGuide();
+  await loadCurrentUser();
+  await loadStats();
+  await loadSessions();
+}
+
+initializePage();

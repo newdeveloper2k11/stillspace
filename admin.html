@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard | Vtn Meditation</title>
+  <meta name="description" content="Administrator dashboard for Vtn Meditation.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Manrope:wght@400;500;700&display=swap"
+    rel="stylesheet"
+  >
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <div class="mist-layer" id="mist-layer" aria-hidden="true"></div>
+  <div class="background-glow background-glow-left"></div>
+  <div class="background-glow background-glow-right"></div>
+
+  <main class="page-shell admin-shell">
+    <header class="topbar admin-topbar">
+      <a class="brand-mark" href="/">Vtn Meditation</a>
+      <div class="topbar-actions admin-topbar-actions">
+        <a class="ghost-button dashboard-home-link" href="/">Main site</a>
+        <button class="ghost-button topbar-logout" id="admin-logout-button" type="button">Sign out</button>
+      </div>
+    </header>
+
+    <section class="hero-card admin-hero">
+      <p class="eyebrow">Administrator</p>
+      <h1>Guide the practice space.</h1>
+      <p class="hero-copy" id="admin-welcome-copy">
+        Review members, recent sessions, and overall meditation activity from one protected dashboard.
+      </p>
+    </section>
+
+    <section class="admin-grid">
+      <article class="panel admin-overview-panel">
+        <div class="panel-heading">
+          <p class="eyebrow">Overview</p>
+          <h2>Account and practice totals</h2>
+        </div>
+        <div class="admin-stat-grid">
+          <div class="admin-stat-card">
+            <span class="stat-label">Members</span>
+            <strong id="admin-total-users">-</strong>
+          </div>
+          <div class="admin-stat-card">
+            <span class="stat-label">Admins</span>
+            <strong id="admin-total-admins">-</strong>
+          </div>
+          <div class="admin-stat-card">
+            <span class="stat-label">All sessions</span>
+            <strong id="admin-total-sessions">-</strong>
+          </div>
+          <div class="admin-stat-card">
+            <span class="stat-label">Minutes practiced</span>
+            <strong id="admin-total-minutes">-</strong>
+          </div>
+          <div class="admin-stat-card">
+            <span class="stat-label">Today</span>
+            <strong id="admin-today-sessions">-</strong>
+          </div>
+        </div>
+      </article>
+
+      <article class="panel admin-users-panel">
+        <div class="panel-heading">
+          <p class="eyebrow">Members</p>
+          <h2>Recent sign-ins</h2>
+        </div>
+        <div class="admin-list" id="admin-user-list"></div>
+      </article>
+
+      <article class="panel admin-sessions-panel">
+        <div class="panel-heading">
+          <p class="eyebrow">Sessions</p>
+          <h2>Recent meditation activity</h2>
+        </div>
+        <div class="admin-list" id="admin-session-list"></div>
+      </article>
+    </section>
+  </main>
+
+  <script src="admin.js"></script>
+</body>
+</html>

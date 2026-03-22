@@ -140,6 +140,13 @@ button {
   margin-left: auto;
 }
 
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-left: auto;
+}
+
 .auth-button {
   min-width: 7.5rem;
 }
@@ -149,6 +156,38 @@ button {
   align-items: center;
   justify-content: center;
   min-width: 11.5rem;
+  text-decoration: none;
+}
+
+.user-avatar {
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(43, 69, 62, 0.12);
+}
+
+.user-name {
+  font-weight: 600;
+}
+
+.admin-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.28rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(94, 139, 126, 0.14);
+  color: var(--accent-deep);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.dashboard-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   text-decoration: none;
 }
 
