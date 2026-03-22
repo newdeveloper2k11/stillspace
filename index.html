@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stillspace Meditation</title>
+  <meta
+    name="description"
+    content="A calm meditation website with guided breathing, ambient sound, and a gentle session timer."
+  >
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Manrope:wght@400;500;700&display=swap"
+    rel="stylesheet"
+  >
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="mist-layer" id="mist-layer" aria-hidden="true"></div>
+  <div class="background-glow background-glow-left"></div>
+  <div class="background-glow background-glow-right"></div>
+
+  <main class="page-shell">
+    <section class="hero-card reveal" data-reveal>
+      <p class="eyebrow">Meditation space</p>
+      <h1>Make a little quiet, right where you are.</h1>
+      <p class="hero-copy">
+        Follow the breath, soften your pace, and settle into a short session designed
+        for focus, reset, and rest.
+      </p>
+
+      <div class="hero-actions">
+        <button class="primary-button" id="start-session">Start a 5-minute session</button>
+        <button class="ghost-button" id="toggle-sound">Play ambient sound</button>
+      </div>
+
+      <div class="hero-wave" aria-hidden="true">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+
+      <div class="stats-grid">
+        <article>
+          <span class="stat-label">Breath rhythm</span>
+          <strong>4 in · 4 hold · 6 out</strong>
+        </article>
+        <article>
+          <span class="stat-label">Focus mode</span>
+          <strong>Soft visuals + gentle chime</strong>
+        </article>
+        <article>
+          <span class="stat-label">Best for</span>
+          <strong>Morning reset or evening calm</strong>
+        </article>
+      </div>
+    </section>
+
+    <section class="experience-grid">
+      <article class="panel breathing-panel reveal" data-reveal>
+        <div class="panel-heading">
+          <p class="eyebrow">Guided breathing</p>
+          <h2>Let the circle lead.</h2>
+        </div>
+
+        <div class="breathing-stage">
+          <div class="breath-orbit breath-orbit-one" aria-hidden="true"></div>
+          <div class="breath-orbit breath-orbit-two" aria-hidden="true"></div>
+          <div class="breath-pulse breath-pulse-one" aria-hidden="true"></div>
+          <div class="breath-pulse breath-pulse-two" aria-hidden="true"></div>
+          <div class="breath-ring" id="breath-ring">
+            <div class="breath-core">
+              <span id="breath-phase">Inhale</span>
+            </div>
+          </div>
+        </div>
+
+        <p class="breath-caption" id="breath-caption">
+          Breathe in slowly through the nose.
+        </p>
+      </article>
+
+      <article class="panel timer-panel reveal" data-reveal>
+        <div class="panel-heading">
+          <p class="eyebrow">Session timer</p>
+          <h2>Choose the space you need.</h2>
+        </div>
+
+        <div class="timer-presets" role="group" aria-label="Meditation duration presets">
+          <button class="preset active" data-minutes="5">5 min</button>
+          <button class="preset" data-minutes="10">10 min</button>
+          <button class="preset" data-minutes="15">15 min</button>
+        </div>
+
+        <p class="timer-readout" id="timer-display">05:00</p>
+        <p class="timer-status" id="timer-status">Ready when you are.</p>
+
+        <div class="timer-actions">
+          <button class="primary-button" id="timer-toggle">Begin</button>
+          <button class="ghost-button" id="timer-reset">Reset</button>
+        </div>
+      </article>
+
+      <article class="panel intentions-panel reveal" data-reveal>
+        <div class="panel-heading">
+          <p class="eyebrow">Meditation intentions</p>
+          <h2>Settle your attention.</h2>
+        </div>
+
+        <div class="intentions-list">
+          <div>
+            <h3>Ground</h3>
+            <p>Notice your feet, jaw, and shoulders. Release what does not need to be held.</p>
+          </div>
+          <div>
+            <h3>Notice</h3>
+            <p>Let thoughts arrive and leave without chasing them. Return to the breath each time.</p>
+          </div>
+          <div>
+            <h3>Close gently</h3>
+            <p>When the timer ends, pause before moving. Keep one clear feeling from the session.</p>
+          </div>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
