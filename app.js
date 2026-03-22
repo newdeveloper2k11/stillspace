@@ -22,6 +22,7 @@ const userAvatar = document.getElementById("user-avatar");
 const userName = document.getElementById("user-name");
 const adminBadge = document.getElementById("admin-badge");
 const dashboardLink = document.getElementById("dashboard-link");
+const adminLink = document.getElementById("admin-link");
 const logoutButton = document.getElementById("logout-button");
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const netlifyHosted = window.location.hostname.endsWith("netlify.app");
@@ -364,7 +365,8 @@ function updateHeader(user) {
     userAvatar.src = user.picture || "https://www.gravatar.com/avatar/?d=mp";
     userAvatar.alt = `${user.name} avatar`;
     adminBadge.style.display = user.role === "admin" ? "inline-flex" : "none";
-    dashboardLink.style.display = user.role === "admin" ? "inline-flex" : "none";
+    dashboardLink.style.display = "inline-flex";
+    adminLink.style.display = user.role === "admin" ? "inline-flex" : "none";
     return;
   }
 
@@ -372,6 +374,7 @@ function updateHeader(user) {
   userProfile.style.display = "none";
   adminBadge.style.display = "none";
   dashboardLink.style.display = "none";
+  adminLink.style.display = "none";
 }
 
 async function loadCurrentUser() {

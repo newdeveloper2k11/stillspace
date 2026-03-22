@@ -224,7 +224,7 @@
         if (data.ok) {
           statusEl.textContent = `Welcome, ${data.user.name}!`;
           window.setTimeout(() => {
-            window.location.href = "/";
+            window.location.href = "/dashboard.html";
           }, 600);
         } else {
           statusEl.textContent = data.error || "Sign-in failed. Please try again.";

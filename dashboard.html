@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Dashboard - Vtn Meditation</title>
+  <meta name="description" content="Review your meditation progress, recent sessions, and personal rhythm in Vtn Meditation.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Manrope:wght@400;500;700&display=swap"
+    rel="stylesheet"
+  >
+  <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+  <div class="dashboard-glow dashboard-glow-left"></div>
+  <div class="dashboard-glow dashboard-glow-right"></div>
+
+  <main class="dashboard-shell">
+    <header class="dashboard-topbar">
+      <a class="dashboard-brand" href="/index.html">Vtn Meditation</a>
+      <div class="dashboard-topbar-actions">
+        <a class="dashboard-link-button" href="/index.html">Practice space</a>
+        <a class="dashboard-link-button" id="dashboard-admin-link" href="/admin.html" style="display:none;">Admin</a>
+        <button class="dashboard-logout-button" id="dashboard-logout-button" type="button">Sign out</button>
+      </div>
+    </header>
+
+    <section class="dashboard-hero">
+      <div>
+        <p class="dashboard-eyebrow">Your Dashboard</p>
+        <h1 id="dashboard-heading">Welcome back.</h1>
+        <p class="dashboard-copy" id="dashboard-copy">
+          Track your meditation rhythm, recent sessions, and personal consistency in one place.
+        </p>
+      </div>
+      <div class="dashboard-profile-card">
+        <img class="dashboard-avatar" id="dashboard-avatar" src="" alt="User avatar">
+        <div>
+          <strong class="dashboard-name" id="dashboard-name">Meditator</strong>
+          <p class="dashboard-email" id="dashboard-email"></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="dashboard-grid">
+      <article class="dashboard-panel dashboard-stat-panel">
+        <span class="dashboard-stat-label">Total sessions</span>
+        <strong class="dashboard-stat-value" id="dashboard-total-sessions">0</strong>
+      </article>
+      <article class="dashboard-panel dashboard-stat-panel">
+        <span class="dashboard-stat-label">Minutes practiced</span>
+        <strong class="dashboard-stat-value" id="dashboard-total-minutes">0</strong>
+      </article>
+      <article class="dashboard-panel dashboard-stat-panel">
+        <span class="dashboard-stat-label">Practice streak</span>
+        <strong class="dashboard-stat-value" id="dashboard-streak">0</strong>
+      </article>
+    </section>
+
+    <section class="dashboard-content-grid">
+      <article class="dashboard-panel">
+        <div class="dashboard-panel-heading">
+          <p class="dashboard-eyebrow">Recent sessions</p>
+          <h2>Your history</h2>
+        </div>
+        <ul class="dashboard-session-list" id="dashboard-session-list">
+          <li class="dashboard-session-empty" id="dashboard-session-empty">No saved sessions yet. Complete a practice to begin your record.</li>
+        </ul>
+      </article>
+
+      <article class="dashboard-panel dashboard-focus-panel">
+        <div class="dashboard-panel-heading">
+          <p class="dashboard-eyebrow">Focus note</p>
+          <h2>Keep the rhythm gentle.</h2>
+        </div>
+        <p class="dashboard-copy">
+          Let the dashboard be a reflection, not pressure. One quiet session is enough to return to the day with more care.
+        </p>
+        <div class="dashboard-cta-group">
+          <a class="dashboard-primary-link" href="/index.html">Start a session</a>
+          <a class="dashboard-secondary-link" href="/login.html?mode=login">Switch account</a>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <script src="dashboard.js"></script>
+</body>
+</html>

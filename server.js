@@ -232,8 +232,15 @@ const server = http.createServer(async (request, response) => {
     }
   }
 
+  if (requestPath === "/dashboard.html") {
+    if (!user) {
+      redirect(response, "/login.html?mode=login");
+      return;
+    }
+  }
+
   if (requestPath === "/login.html" && user) {
-    redirect(response, user.role === "admin" ? "/admin.html" : "/");
+    redirect(response, "/dashboard.html");
     return;
   }
 
