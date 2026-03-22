@@ -2,6 +2,7 @@
   --bg: #f3efe6;
   --bg-deep: #d9e7df;
   --panel: rgba(255, 251, 244, 0.75);
+  --panel-strong: rgba(255, 255, 255, 0.38);
   --text: #20302d;
   --muted: #5d6e69;
   --accent: #5e8b7e;
@@ -59,8 +60,8 @@ body {
 }
 
 .login-card {
-  width: min(420px, 100%);
-  padding: 2.8rem 2.4rem;
+  width: min(520px, 100%);
+  padding: 2.9rem 2.5rem;
   border-radius: 32px;
   backdrop-filter: blur(18px);
   background: var(--panel);
@@ -81,34 +82,80 @@ body {
 .login-heading {
   font-family: "Cormorant Garamond", serif;
   font-weight: 600;
-  font-size: clamp(2.4rem, 6vw, 3.2rem);
+  font-size: clamp(2.5rem, 6vw, 3.3rem);
   line-height: 0.95;
   margin: 0;
 }
 
-.login-copy {
+.login-copy,
+.auth-panel-copy,
+.login-footer p {
   color: var(--muted);
   line-height: 1.7;
+}
+
+.login-copy {
   margin: 1rem 0 0;
   font-size: 1rem;
 }
 
-.login-divider {
-  width: 3rem;
-  height: 2px;
-  margin: 1.8rem auto;
-  background: linear-gradient(90deg, transparent, var(--accent), transparent);
-  border-radius: 999px;
+.auth-switch {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+  margin-top: 2rem;
 }
 
-#google-signin-container {
+.auth-switch-button {
+  border-radius: 999px;
+  border: 1px solid rgba(63, 101, 90, 0.15);
+  padding: 0.95rem 1.2rem;
+  background: rgba(255, 255, 255, 0.5);
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+  transition: transform 180ms ease, background-color 180ms ease, border-color 180ms ease;
+}
+
+.auth-switch-button.active {
+  background: var(--accent-deep);
+  color: #f6f3ed;
+  border-color: transparent;
+}
+
+.auth-switch-button:hover {
+  transform: translateY(-1px);
+}
+
+.auth-card-space {
+  margin-top: 1.3rem;
+  padding: 1.4rem 1.2rem;
+  border-radius: 24px;
+  background: var(--panel-strong);
+  border: 1px solid rgba(43, 69, 62, 0.08);
+}
+
+.auth-mode-panel {
+  display: none;
+}
+
+.auth-mode-panel.active {
+  display: block;
+}
+
+.auth-panel-copy {
+  margin: 0 0 1rem;
+  font-size: 0.96rem;
+}
+
+.google-signin-container {
   display: flex;
   justify-content: center;
   min-height: 44px;
 }
 
 .login-status {
-  margin: 1.2rem 0 0;
+  margin: 1.25rem 0 0;
   font-size: 0.92rem;
   color: var(--accent-deep);
   min-height: 1.4em;
@@ -124,7 +171,6 @@ body {
 .login-footer p {
   margin: 0;
   font-size: 0.82rem;
-  color: var(--muted);
 }
 
 @keyframes cardRise {
@@ -132,6 +178,7 @@ body {
     opacity: 0;
     transform: translateY(32px) scale(0.97);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -142,14 +189,23 @@ body {
   from {
     transform: translate(0, 0);
   }
+
   to {
     transform: translate(2rem, 1.5rem);
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 560px) {
   .login-card {
     padding: 2rem 1.4rem;
     border-radius: 24px;
+  }
+
+  .auth-switch {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-card-space {
+    padding: 1rem;
   }
 }

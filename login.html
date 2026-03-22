@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sign in — Vtn Meditation</title>
+  <title>Sign in - Vtn Meditation</title>
   <meta name="description" content="Sign in to your Vtn Meditation practice space.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,29 +21,30 @@
   <main class="login-shell">
     <div class="login-card">
       <p class="login-eyebrow">Vtn Meditation</p>
-      <h1 class="login-heading">Welcome back.</h1>
-      <p class="login-copy">
+      <h1 class="login-heading" id="auth-heading">Welcome back.</h1>
+      <p class="login-copy" id="auth-copy">
         Sign in to continue your meditation practice and track your journey.
       </p>
 
-      <div class="login-divider"></div>
+      <div class="auth-switch" role="tablist" aria-label="Authentication mode">
+        <button class="auth-switch-button active" id="login-tab" type="button" data-mode="login">Log in</button>
+        <button class="auth-switch-button" id="signup-tab" type="button" data-mode="signup">Sign up</button>
+      </div>
 
-      <div id="google-signin-container">
-        <div
-          id="g_id_onload"
-          data-callback="handleGoogleSignIn"
-          data-auto_prompt="false"
-        ></div>
-        <div
-          class="g_id_signin"
-          data-type="standard"
-          data-shape="pill"
-          data-theme="outline"
-          data-text="signin_with"
-          data-size="large"
-          data-logo_alignment="left"
-          data-width="320"
-        ></div>
+      <div class="auth-card-space">
+        <div class="auth-mode-panel active" id="login-panel">
+          <p class="auth-panel-copy">
+            Return to your meditation dashboard, saved progress, and session history with Google.
+          </p>
+          <div class="google-signin-container" id="google-signin-login"></div>
+        </div>
+
+        <div class="auth-mode-panel" id="signup-panel" hidden>
+          <p class="auth-panel-copy">
+            Create your account with Google and start saving your meditation sessions locally.
+          </p>
+          <div class="google-signin-container" id="google-signin-signup"></div>
+        </div>
       </div>
 
       <p class="login-status" id="login-status"></p>
@@ -55,60 +56,106 @@
   </main>
 
   <script>
-    // Fetch Google Client ID from server config
-    (async function initLogin() {
+    const loginTab = document.getElementById("login-tab");
+    const signupTab = document.getElementById("signup-tab");
+    const loginPanel = document.getElementById("login-panel");
+    const signupPanel = document.getElementById("signup-panel");
+    const heading = document.getElementById("auth-heading");
+    const copy = document.getElementById("auth-copy");
+    const statusEl = document.getElementById("login-status");
+
+    const modeContent = {
+      login: {
+        heading: "Welcome back.",
+        copy: "Sign in to continue your meditation practice and track your journey.",
+      },
+      signup: {
+        heading: "Create your practice space.",
+        copy: "Sign up to save your sessions, return to your routines, and keep your progress in one place.",
+      },
+    };
+
+    function setMode(mode) {
+      const isSignup = mode === "signup";
+      loginTab.classList.toggle("active", !isSignup);
+      signupTab.classList.toggle("active", isSignup);
+      loginPanel.classList.toggle("active", !isSignup);
+      signupPanel.classList.toggle("active", isSignup);
+      loginPanel.hidden = isSignup;
+      signupPanel.hidden = !isSignup;
+      heading.textContent = modeContent[mode].heading;
+      copy.textContent = modeContent[mode].copy;
+    }
+
+    function renderGoogleButtons(clientId) {
+      if (!window.google || !window.google.accounts || !clientId) {
+        return;
+      }
+
+      window.google.accounts.id.initialize({
+        client_id: clientId,
+        callback: handleGoogleSignIn,
+      });
+
+      [
+        document.getElementById("google-signin-login"),
+        document.getElementById("google-signin-signup"),
+      ].forEach((container) => {
+        container.innerHTML = "";
+        window.google.accounts.id.renderButton(container, {
+          type: "standard",
+          shape: "pill",
+          theme: "outline",
+          text: "continue_with",
+          size: "large",
+          logo_alignment: "left",
+          width: 320,
+        });
+      });
+    }
+
+    async function initLogin() {
       try {
-        // Check if already logged in
         const meResponse = await fetch("/api/auth/me");
         if (meResponse.ok) {
           window.location.href = "/";
           return;
         }
       } catch {
-        // Not logged in — continue showing login page
+        // Not logged in, continue.
       }
 
-      // Load the Google Client ID dynamically
+      const initialMode = new URL(window.location.href).searchParams.get("mode") === "signup"
+        ? "signup"
+        : "login";
+      setMode(initialMode);
+
       try {
         const configResponse = await fetch("/api/auth/config");
         const config = await configResponse.json();
 
-        if (config.googleClientId) {
-          const onloadDiv = document.getElementById("g_id_onload");
-          onloadDiv.setAttribute("data-client_id", config.googleClientId);
-
-          // Re-initialize Google Identity Services
-          if (window.google && window.google.accounts) {
-            window.google.accounts.id.initialize({
-              client_id: config.googleClientId,
-              callback: handleGoogleSignIn,
-            });
-            window.google.accounts.id.renderButton(
-              document.querySelector(".g_id_signin"),
-              {
-                type: "standard",
-                shape: "pill",
-                theme: "outline",
-                text: "signin_with",
-                size: "large",
-                logo_alignment: "left",
-                width: 320,
-              }
-            );
-          }
-        } else {
-          document.getElementById("login-status").textContent =
-            "Google Sign-In is not configured. Add GOOGLE_CLIENT_ID to .env";
+        if (!config.googleClientId) {
+          statusEl.textContent = "Google Sign-In is not configured. Add GOOGLE_CLIENT_ID to .env";
+          return;
         }
+
+        const tryRender = () => {
+          if (!window.google || !window.google.accounts) {
+            window.setTimeout(tryRender, 150);
+            return;
+          }
+
+          renderGoogleButtons(config.googleClientId);
+        };
+
+        tryRender();
       } catch {
-        document.getElementById("login-status").textContent =
-          "Could not load sign-in configuration.";
+        statusEl.textContent = "Could not load sign-in configuration.";
       }
-    })();
+    }
 
     async function handleGoogleSignIn(response) {
-      const statusEl = document.getElementById("login-status");
-      statusEl.textContent = "Signing in…";
+      statusEl.textContent = "Signing in...";
 
       try {
         const result = await fetch("/api/auth/google", {
@@ -121,16 +168,22 @@
 
         if (data.ok) {
           statusEl.textContent = `Welcome, ${data.user.name}!`;
-          setTimeout(() => {
+          window.setTimeout(() => {
             window.location.href = "/";
           }, 600);
         } else {
           statusEl.textContent = data.error || "Sign-in failed. Please try again.";
         }
-      } catch (error) {
+      } catch {
         statusEl.textContent = "Network error. Please try again.";
       }
     }
+
+    loginTab.addEventListener("click", () => setMode("login"));
+    signupTab.addEventListener("click", () => setMode("signup"));
+
+    window.handleGoogleSignIn = handleGoogleSignIn;
+    initLogin();
   </script>
 </body>
 </html>
