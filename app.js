@@ -24,6 +24,7 @@ const adminBadge = document.getElementById("admin-badge");
 const dashboardLink = document.getElementById("dashboard-link");
 const logoutButton = document.getElementById("logout-button");
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const netlifyHosted = window.location.hostname.endsWith("netlify.app");
 
 const breathSequence = [
   { label: "Arrive", caption: "Breathe in slowly and let the body settle.", duration: 4000 },
@@ -45,6 +46,59 @@ let pointerTargetY = 0;
 let pointerCurrentX = 0;
 let pointerCurrentY = 0;
 let currentUser = null;
+
+function getLocalSessionKey() {
+  if (!currentUser || !currentUser.email) {
+    return null;
+  }
+
+  return `vtn-local-sessions:${currentUser.email.toLowerCase()}`;
+}
+
+function getLocalSessions() {
+  const key = getLocalSessionKey();
+  if (!key) {
+    return [];
+  }
+
+  try {
+    const rawValue = window.localStorage.getItem(key);
+    const sessions = rawValue ? JSON.parse(rawValue) : [];
+    return Array.isArray(sessions) ? sessions : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveLocalSessions(sessions) {
+  const key = getLocalSessionKey();
+  if (!key) {
+    return;
+  }
+
+  window.localStorage.setItem(key, JSON.stringify(sessions));
+}
+
+function calculateLocalStats(sessions) {
+  const totalSessions = sessions.length;
+  const totalMinutes = sessions.reduce((sum, session) => sum + Math.round((session.completed || 0) / 60), 0);
+  const uniqueDays = new Set(
+    sessions.map((session) => new Date(session.finishedAt).toISOString().slice(0, 10))
+  );
+
+  return {
+    totalSessions,
+    totalMinutes,
+    streak: uniqueDays.size,
+  };
+}
+
+function loadLocalStatsIntoUi() {
+  const stats = calculateLocalStats(getLocalSessions());
+  statTotalSessions.textContent = String(stats.totalSessions);
+  statTotalMinutes.textContent = String(stats.totalMinutes);
+  statStreak.textContent = String(stats.streak);
+}
 
 function updateBreathGuide() {
   const phase = breathSequence[breathIndex];
@@ -360,9 +414,27 @@ async function saveSession(duration, completed) {
       return;
     }
 
+    if (!response.ok) {
+      throw new Error("Remote session save unavailable");
+    }
+
     await loadStats();
     await loadSessions();
   } catch (error) {
+    if (currentUser && netlifyHosted) {
+      const sessions = getLocalSessions();
+      sessions.unshift({
+        duration,
+        completed,
+        finishedAt: new Date().toISOString(),
+      });
+      saveLocalSessions(sessions.slice(0, 24));
+      await loadStats();
+      await loadSessions();
+      timerStatus.textContent = "Session saved in your browser for this signed-in account.";
+      return;
+    }
+
     console.warn("Could not save session:", error);
   }
 }
@@ -376,11 +448,20 @@ async function loadStats() {
       return;
     }
 
+    if (!response.ok) {
+      throw new Error("Remote stats unavailable");
+    }
+
     const data = await response.json();
     statTotalSessions.textContent = data.totalSessions || "0";
     statTotalMinutes.textContent = data.totalMinutes || "0";
     statStreak.textContent = data.streak || "0";
   } catch (error) {
+    if (currentUser && netlifyHosted) {
+      loadLocalStatsIntoUi();
+      return;
+    }
+
     console.warn("Could not load stats:", error);
   }
 }
@@ -392,6 +473,10 @@ async function loadSessions() {
     if (response.status === 401) {
       showSignedOutHistoryState("Sign in with Google to save and review your meditation history.");
       return;
+    }
+
+    if (!response.ok) {
+      throw new Error("Remote sessions unavailable");
     }
 
     const data = await response.json();
@@ -431,6 +516,43 @@ async function loadSessions() {
       sessionList.appendChild(li);
     });
   } catch (error) {
+    if (currentUser && netlifyHosted) {
+      const sessions = getLocalSessions();
+      Array.from(sessionList.querySelectorAll(".session-item")).forEach((item) => item.remove());
+
+      if (sessions.length === 0) {
+        sessionEmpty.textContent = "No browser-saved sessions yet. Complete a meditation to build your local history.";
+        sessionEmpty.style.display = "";
+        return;
+      }
+
+      sessionEmpty.style.display = "none";
+      sessions.forEach((session) => {
+        const li = document.createElement("li");
+        li.className = "session-item";
+
+        const completedMinutes = Math.round(session.completed / 60);
+        const date = new Date(session.finishedAt);
+        const dateString = date.toLocaleDateString(undefined, {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        });
+        const timeString = date.toLocaleTimeString(undefined, {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+
+        li.innerHTML = `
+          <span class="session-date">${dateString} - ${timeString}</span>
+          <span class="session-detail">${session.duration} min session - ${completedMinutes} min completed</span>
+        `;
+
+        sessionList.appendChild(li);
+      });
+      return;
+    }
+
     console.warn("Could not load sessions:", error);
   }
 }

@@ -8,6 +8,7 @@ require("dotenv").config({ path: path.join(__dirname, ".env") });
 
 const COOKIE_NAME = "stillspace_session";
 const TOKEN_EXPIRY = "7d";
+const DEFAULT_ADMIN_EMAIL = "votrongnhan632@gmail.com";
 
 function getJwtSecret() {
   if (process.env.JWT_SECRET) {
@@ -67,7 +68,13 @@ function issueSessionToken(user) {
   const secret = getJwtSecret();
 
   return jwt.sign(
-    { userId: user.id, email: user.email, role: user.role },
+    {
+      userId: user.id,
+      email: user.email,
+      role: user.role,
+      name: user.name,
+      picture: user.picture || "",
+    },
     secret,
     { expiresIn: TOKEN_EXPIRY }
   );
@@ -108,20 +115,28 @@ function getSessionFromRequest(request) {
   return verifySessionToken(token);
 }
 
+function createSessionCookieHeader(token) {
+  return `${COOKIE_NAME}=${token}; HttpOnly; Path=/; SameSite=Lax; Max-Age=${7 * 24 * 60 * 60}`;
+}
+
+function createClearedSessionCookieHeader() {
+  return `${COOKIE_NAME}=; HttpOnly; Path=/; SameSite=Lax; Max-Age=0`;
+}
+
 function setSessionCookie(response, token) {
   response.setHeader("Set-Cookie", [
-    `${COOKIE_NAME}=${token}; HttpOnly; Path=/; SameSite=Lax; Max-Age=${7 * 24 * 60 * 60}`,
+    createSessionCookieHeader(token),
   ]);
 }
 
 function clearSessionCookie(response) {
   response.setHeader("Set-Cookie", [
-    `${COOKIE_NAME}=; HttpOnly; Path=/; SameSite=Lax; Max-Age=0`,
+    createClearedSessionCookieHeader(),
   ]);
 }
 
 function isAdmin(email) {
-  const adminEmail = process.env.ADMIN_EMAIL;
+  const adminEmail = process.env.ADMIN_EMAIL || DEFAULT_ADMIN_EMAIL;
   if (!adminEmail) {
     return false;
   }
@@ -135,6 +150,9 @@ module.exports = {
   getSessionFromRequest,
   setSessionCookie,
   clearSessionCookie,
+  createSessionCookieHeader,
+  createClearedSessionCookieHeader,
   isAdmin,
   COOKIE_NAME,
+  verifySessionToken,
 };

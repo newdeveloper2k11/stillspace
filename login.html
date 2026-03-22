@@ -73,6 +73,7 @@
       document.getElementById("login-google-popup"),
       document.getElementById("signup-google-popup"),
     ];
+    const publicGoogleClientId = "1021107426413-8v99vubgb2uo5leptcr47u5s1mfqff9i.apps.googleusercontent.com";
     let googleClientId = "";
 
     const modeContent = {
@@ -190,10 +191,7 @@
       try {
         const config = await loadAuthConfig();
 
-        if (!config.googleClientId) {
-          statusEl.textContent = "Google Sign-In is not configured. Add GOOGLE_CLIENT_ID to .env";
-          return;
-        }
+        const resolvedClientId = config.googleClientId || publicGoogleClientId;
 
         const tryRender = () => {
           if (!window.google || !window.google.accounts) {
@@ -201,12 +199,13 @@
             return;
           }
 
-          renderGoogleButtons(config.googleClientId);
+          renderGoogleButtons(resolvedClientId);
         };
 
         tryRender();
       } catch (error) {
-        statusEl.textContent = "Could not load sign-in configuration. On Netlify, add GOOGLE_CLIENT_ID in site environment variables.";
+        renderGoogleButtons(publicGoogleClientId);
+        statusEl.textContent = "Using built-in Google sign-in setup. If the popup is blocked, re-check the authorized Netlify origin in Google Cloud.";
       }
     }
 
