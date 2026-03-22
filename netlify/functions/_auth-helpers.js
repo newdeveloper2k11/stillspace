@@ -19,6 +19,14 @@ function json(statusCode, body, extraHeaders = {}) {
   };
 }
 
+function addSecureAttribute(cookieHeader) {
+  if (cookieHeader.includes("Secure")) {
+    return cookieHeader;
+  }
+
+  return `${cookieHeader}; Secure`;
+}
+
 function getSessionUser(event) {
   const session = getSessionFromRequest({
     headers: {
@@ -52,7 +60,7 @@ async function signInFromGoogleCredential(credential) {
 
   return {
     user,
-    cookieHeader: createSessionCookieHeader(token),
+    cookieHeader: addSecureAttribute(createSessionCookieHeader(token)),
   };
 }
 
@@ -60,5 +68,5 @@ module.exports = {
   json,
   getSessionUser,
   signInFromGoogleCredential,
-  createClearedSessionCookieHeader,
+  createClearedSessionCookieHeader: () => addSecureAttribute(createClearedSessionCookieHeader()),
 };

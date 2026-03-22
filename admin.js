@@ -70,7 +70,7 @@ function renderFallbackOverview(user) {
 }
 
 async function loadDashboard() {
-  const meResponse = await fetch("/api/auth/me");
+  const meResponse = await fetch("/api/auth/me", { credentials: "include" });
 
   if (!meResponse.ok) {
     window.location.href = "/login.html?mode=login";
@@ -106,7 +106,7 @@ async function loadDashboard() {
 
 async function logout() {
   try {
-    await fetch("/api/auth/logout", { method: "POST" });
+    await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
   } finally {
     window.location.href = "/login.html?mode=login";
   }

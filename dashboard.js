@@ -105,7 +105,7 @@ function renderUser(user) {
 }
 
 async function loadUser() {
-  const response = await fetch("/api/auth/me");
+  const response = await fetch("/api/auth/me", { credentials: "include" });
 
   if (!response.ok) {
     window.location.href = "/login.html?mode=login";
@@ -154,7 +154,7 @@ async function loadSessions() {
 
 async function logout() {
   try {
-    await fetch("/api/auth/logout", { method: "POST" });
+    await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
   } finally {
     window.location.href = "/login.html?mode=login";
   }

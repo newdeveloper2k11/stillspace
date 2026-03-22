@@ -174,9 +174,9 @@
 
     async function initLogin() {
       try {
-        const meResponse = await fetch("/api/auth/me");
+        const meResponse = await fetch("/api/auth/me", { credentials: "include" });
         if (meResponse.ok) {
-          window.location.href = "/";
+          window.location.href = "/dashboard.html";
           return;
         }
       } catch {
@@ -215,6 +215,7 @@
       try {
         const result = await fetch("/api/auth/google", {
           method: "POST",
+          credentials: "include",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ credential: response.credential }),
         });
