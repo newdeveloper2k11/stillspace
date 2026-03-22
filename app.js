@@ -14,13 +14,13 @@ const glows = document.querySelectorAll(".background-glow");
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 const breathSequence = [
-  { label: "Inhale", caption: "Breathe in slowly through the nose.", duration: 4000 },
-  { label: "Hold", caption: "Stay soft. Let the breath settle.", duration: 4000 },
-  { label: "Exhale", caption: "Release gently and completely.", duration: 6000 },
+  { label: "Arrive", caption: "Breathe in slowly and let the body settle.", duration: 4000 },
+  { label: "Notice", caption: "Stay still. Feel the mind without forcing it.", duration: 4000 },
+  { label: "Release", caption: "Exhale and soften any unnecessary effort.", duration: 6000 },
 ];
 
 let breathIndex = 0;
-let selectedMinutes = 5;
+let selectedMinutes = 10;
 let timeRemaining = selectedMinutes * 60;
 let timerIntervalId = null;
 let audioContext = null;
@@ -60,7 +60,7 @@ function setPreset(minutes) {
   selectedMinutes = minutes;
   timeRemaining = minutes * 60;
   renderTimer();
-  timerStatus.textContent = `A ${minutes}-minute session is ready.`;
+  timerStatus.textContent = `A ${minutes}-minute quiet session is ready.`;
 
   presetButtons.forEach((button) => {
     button.classList.toggle("active", Number(button.dataset.minutes) === minutes);
@@ -95,19 +95,19 @@ function playCompletionChime() {
 function startTimer() {
   if (timerIntervalId) {
     stopTimer();
-    timerStatus.textContent = "Session paused. Return when ready.";
+    timerStatus.textContent = "Session paused. Return when your attention is ready.";
     return;
   }
 
   timerToggle.textContent = "Pause";
-  timerStatus.textContent = "Session in progress. Follow the breath.";
+  timerStatus.textContent = "Session in progress. Stay with breath, body, and surroundings.";
 
   timerIntervalId = window.setInterval(() => {
     if (timeRemaining <= 1) {
       timeRemaining = 0;
       renderTimer();
       stopTimer();
-      timerStatus.textContent = "Session complete. Sit quietly for one more breath.";
+      timerStatus.textContent = "Session complete. Rest in stillness for one more breath.";
       playCompletionChime();
       return;
     }
@@ -289,7 +289,7 @@ function bindPointerMotion() {
 }
 
 startSessionButton.addEventListener("click", () => {
-  setPreset(5);
+  setPreset(10);
   if (!timerIntervalId) {
     startTimer();
   }

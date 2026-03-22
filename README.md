@@ -1,7 +1,7 @@
-# Stillspace Meditation
+# Vtn Meditation
 
-This project is a calm, self-contained meditation website.
-It is built with plain HTML, CSS, and JavaScript and served by a small Node.js server.
+This project is a calm, self-contained meditation website inspired by Vo Trong Nghia's public talks on meditation, ethical clarity, and reconnecting people with nature.
+It is built with plain HTML, CSS, and JavaScript and served locally by a small Node.js server.
 
 ## Files
 

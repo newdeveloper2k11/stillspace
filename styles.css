@@ -261,7 +261,8 @@ h3 {
 }
 
 .timer-panel,
-.intentions-panel {
+.intentions-panel,
+.source-panel {
   min-height: 14.5rem;
 }
 
@@ -379,6 +380,15 @@ h3 {
 
 .intentions-panel {
   grid-column: 2;
+}
+
+.source-panel {
+  margin-top: 1rem;
+}
+
+.source-copy {
+  max-width: 52rem;
+  margin: 0;
 }
 
 .intentions-list {
