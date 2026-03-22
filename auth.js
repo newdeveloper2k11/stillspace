@@ -15,6 +15,17 @@ function getJwtSecret() {
     return process.env.JWT_SECRET;
   }
 
+  if (process.env.NETLIFY || process.env.URL) {
+    const stableSeed = process.env.GOOGLE_CLIENT_ID || "stillspace-netlify";
+    const derivedSecret = crypto
+      .createHash("sha256")
+      .update(`${stableSeed}:vtn-meditation-session`)
+      .digest("hex");
+
+    process.env.JWT_SECRET = derivedSecret;
+    return derivedSecret;
+  }
+
   const secret = crypto.randomBytes(48).toString("hex");
   const envPath = path.join(__dirname, ".env");
 
