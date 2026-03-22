@@ -154,6 +154,32 @@ body {
   min-height: 44px;
 }
 
+.google-popup-button {
+  width: min(320px, 100%);
+  margin: 1rem auto 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid rgba(63, 101, 90, 0.15);
+  padding: 0.92rem 1.2rem;
+  background: rgba(255, 255, 255, 0.6);
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+  transition: transform 180ms ease, background-color 180ms ease, border-color 180ms ease, opacity 180ms ease;
+}
+
+.google-popup-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.google-popup-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 .login-status {
   margin: 1.25rem 0 0;
   font-size: 0.92rem;

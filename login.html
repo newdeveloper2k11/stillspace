@@ -37,6 +37,9 @@
             Return to your meditation dashboard, saved progress, and session history with Google.
           </p>
           <div class="google-signin-container" id="google-signin-login"></div>
+          <button class="google-popup-button" id="login-google-popup" type="button" disabled>
+            Allow Google popup sign-in
+          </button>
         </div>
 
         <div class="auth-mode-panel" id="signup-panel" hidden>
@@ -44,6 +47,9 @@
             Create your account with Google and start saving your meditation sessions locally.
           </p>
           <div class="google-signin-container" id="google-signin-signup"></div>
+          <button class="google-popup-button" id="signup-google-popup" type="button" disabled>
+            Allow Google popup sign-up
+          </button>
         </div>
       </div>
 
@@ -63,6 +69,11 @@
     const heading = document.getElementById("auth-heading");
     const copy = document.getElementById("auth-copy");
     const statusEl = document.getElementById("login-status");
+    const popupButtons = [
+      document.getElementById("login-google-popup"),
+      document.getElementById("signup-google-popup"),
+    ];
+    let googleClientId = "";
 
     const modeContent = {
       login: {
@@ -92,9 +103,12 @@
         return;
       }
 
+      googleClientId = clientId;
       window.google.accounts.id.initialize({
         client_id: clientId,
         callback: handleGoogleSignIn,
+        auto_select: false,
+        cancel_on_tap_outside: true,
       });
 
       [
@@ -112,6 +126,33 @@
           width: 320,
         });
       });
+
+      popupButtons.forEach((button) => {
+        button.disabled = false;
+      });
+    }
+
+    function showPopupPrompt() {
+      if (!window.google || !window.google.accounts || !googleClientId) {
+        statusEl.textContent = "Google Sign-In is not ready yet. Please wait a moment and try again.";
+        return;
+      }
+
+      statusEl.textContent = "Opening Google sign-in popup...";
+      window.google.accounts.id.prompt((notification) => {
+        if (notification.isNotDisplayed && notification.isNotDisplayed()) {
+          statusEl.textContent = "Google could not open the popup. Check your browser popup settings and authorized origins.";
+        }
+      });
+    }
+
+    async function loadAuthConfig() {
+      const response = await fetch("/api/auth/config", { cache: "no-store" });
+      if (!response.ok) {
+        throw new Error(`Config request failed with ${response.status}`);
+      }
+
+      return response.json();
     }
 
     async function initLogin() {
@@ -131,8 +172,7 @@
       setMode(initialMode);
 
       try {
-        const configResponse = await fetch("/api/auth/config");
-        const config = await configResponse.json();
+        const config = await loadAuthConfig();
 
         if (!config.googleClientId) {
           statusEl.textContent = "Google Sign-In is not configured. Add GOOGLE_CLIENT_ID to .env";
@@ -149,8 +189,8 @@
         };
 
         tryRender();
-      } catch {
-        statusEl.textContent = "Could not load sign-in configuration.";
+      } catch (error) {
+        statusEl.textContent = "Could not load sign-in configuration. Make sure the Node server is running on http://127.0.0.1:3000.";
       }
     }
 
@@ -181,6 +221,7 @@
 
     loginTab.addEventListener("click", () => setMode("login"));
     signupTab.addEventListener("click", () => setMode("signup"));
+    popupButtons.forEach((button) => button.addEventListener("click", showPopupPrompt));
 
     window.handleGoogleSignIn = handleGoogleSignIn;
     initLogin();
