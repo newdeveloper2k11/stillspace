@@ -134,8 +134,22 @@ button {
   gap: 0.75rem;
 }
 
+.auth-links {
+  display: flex;
+  gap: 0.75rem;
+  margin-left: auto;
+}
+
 .auth-button {
   min-width: 7.5rem;
+}
+
+.auth-link-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 7.5rem;
+  text-decoration: none;
 }
 
 .hero-card,
